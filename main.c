@@ -2,54 +2,44 @@
 #include <stdlib.h>
 #include <math.h>
 
+#ifdef test
 long double f1(long double x)
 {
-    return x;
+    return 0.6 * x + 3;
 }
 
 long double f1_derivative(long double x)
 {
-    return 1;
+    return 0.6;
 }
 
 long double f2(long double x)
 {
-    return 3 - 0.5 * x;
+    return (x - 2) * (x - 2) * (x - 2) - 1;
 }
 
 long double f2_derivative(long double x)
 {
-    return -0.5;
+    return 3 * (x - 2) * (x - 2);
 }
 
 long double f3(long double x)
 {
-    return x * x / 16;
+    return 3.0 / x;
 }
 
 long double f3_derivative(long double x)
 {
-    return x / 8;
+    return - 3.0 / x / x;
 }
-
-long double f4 (long double x)
-{
-    return x*x;
-}
-
-long double f4_derivative(long double x)
-{
-    return 2 * x;
-}
-long double f5(long double x)
-{
-    return 1 / x;
-}
-
-long double f5_derivative(long double x)
-{
-    return -1 / (x * x);
-}
+#else
+extern long double f1(long double x);
+extern long double f1_derivative(long double x);
+extern long double f2(long double x);
+extern long double f2_derivative(long double x);
+extern long double f3(long double x);
+extern long double f3_derivative(long double x);
+#endif
 
 
 
@@ -58,7 +48,7 @@ long double root(long double (* f) (long double), long double (*g) (long double)
     *cnt = 0;
     long double c = a, d = b, func_value_c = f(a) - g(a), func_value_d = f(b) - g(b); /// [c, d] - current section, func_value_c = F(c), func_value_d = F(d)
     int type = (f_derivative(a) - g_derivative(a)) * (f_derivative(b) - g_derivative(b) - f_derivative(a) + g_derivative(a)) >= 0; /// F'(a) * (F'(b) - F'(a)) > 0 <=> F' * F" > 0f_derivative(a) - g_derivative(a)
-    while (d - c > eps1)
+    while (fabs(d - c) > eps1)
     {
         if (*cnt % 2 == 0) ///iteration of secant method
         {
@@ -124,32 +114,17 @@ long double integral( long double (*f) (long double), long double a, long double
     return fabs(I);
 }
 
-#define A -1
-#define B 6
 #define eps 0.000001
 
 int main(int argc, char * argv[])
 {
+	//printf("%d\n", argc);
     long double ans = 0;
     int cnt = 0;
-    ans = root(f1, f2, f1_derivative, f2_derivative, A, B, eps, &cnt); ///2
-    printf("%Lf %d\n", ans, cnt);
-    ans = root(f2, f3, f2_derivative, f3_derivative, A, B, eps, &cnt); ///4
-    printf("%Lf %d\n", ans, cnt);
-    ans = root(f1, f3, f1_derivative, f3_derivative, 10, 19, eps, &cnt); ///16
-    printf("%Lf %d\n", ans, cnt);
-    ans = root(f4, f1, f4_derivative, f1_derivative, 0.5, B, eps, &cnt); ///1
-    printf("%Lf %d\n", ans, cnt);
-    ans = root(f4, f1, f4_derivative, f1_derivative,-4, 0.6, eps, &cnt); /// 0
-    printf("%Lf %d\n", ans, cnt);
-    ans = root(f5, f4, f5_derivative, f4_derivative, 0.2, 2, eps, &cnt); ///1
-    printf("%Lf %d\n", ans, cnt);
 
-    printf("\n\n");
-    printf("%Lf\n", integral(f1, A, B, eps)); ///17.5
-    printf("%Lf\n", integral(f2, A, B, eps)); ///12.25
-    printf("%Lf\n", integral(f3, -4, 3, eps)); ///1.8958
-    printf("%Lf\n", integral(f4, 3, 5, eps)); ///32.667
-    printf("%Lf\n", integral(f5, 1, 2.71828, eps)); ///1
+    printf("%Lf %Lf %Lf %Lf %Lf\n", f1(1), f1(2), f1(0), f1(4), f1_derivative(1)); ///3.6  4.2  3  5.4  0.6
+    printf("%Lf %Lf %Lf %Lf %Lf %Lf %Lf\n", f2(1), f2(2), f2(0), f2(4), f2_derivative(0), f2_derivative(1), f2_derivative(-1)); ///
+    ans = root(f1, f2, f1_derivative, f2_derivative, 2.5, 4, eps, &cnt);
+    printf("%Lf %d\n", ans, cnt);
     return 0;
 }
