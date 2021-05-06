@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 #ifdef test
 long double f1(long double x)
@@ -116,40 +117,97 @@ long double integral( long double (*f) (long double), long double a, long double
     return I;
 }
 
-#define eps_1 0.0003
-#define eps_2 0.00001
+#define eps_2 0.0003
+#define eps_1 0.00001
+#define KEYS_NUM 5
+
+char * keys[KEYS_NUM] = {"-help", "-test_i", "-test_r", "-cross", "-steps"};
+char * meanings[KEYS_NUM] = {"print all keys", "[index of function 1/2/3] [L] [R] - find integral under function on [L, R]", \
+"[2 indices of functions: 1/2/3] [L] [R] - find intersections of two functions with entered indices on [L, R]", \
+"print pointes of function intersection", "print number of iterations during root calculations"};
+
+void print_keys(void)
+{
+    for (int i = 0; i < KEYS_NUM; ++i)
+    {
+        printf("%s\n    %s\n", keys[i], meanings[i]);
+    }
+}
+
+void test_integral(int index, long double a, long double b)
+{
+    long double result = 0;
+    switch (index)
+    {
+        case 1: result = integral(f1, a, b, eps_2);
+            break;
+        case 2: result = integral(f2, a, b, eps_2);
+            break;
+        case 3: result = integral(f3, a, b, eps_2);
+            break;
+    }
+    printf("integral of function %d on [%Lf, %Lf] = %Lf\n", index, a, b, result);
+}
+
+void test_root(int index1, int index2, long double a, long double b)
+{
+    int indices = 10 * (index1 < index2 ? index1 : index2) + (index1 < index2 ? index2 : index1); ///min(index1, index2) * 10 + max(index1, index2)
+    long double result = 0;
+    int cnt = 0;
+    switch (indices)
+    {
+        case 12: result = root(f1, f2, f1_derivative, f2_derivative, a, b, eps_1, &cnt); /// 1 and 2
+            break;
+        case 13: result = root(f1, f3, f1_derivative, f3_derivative, a, b, eps_1, &cnt); /// 1 and 3
+            break;
+        case 23: result = root(f2, f3, f2_derivative, f3_derivative, a, b, eps_1, &cnt); /// 2 and 3
+            break;
+    }
+    printf("root of F = f%d-f%d on [%Lf, %Lf] = %Lf\n with %d iterations\n", index1, index2, a, b, result, cnt);
+}
 
 int main(int argc, char * argv[])
 {
-	//printf("%d\n", argc);
+    if (argc > 1 && strcmp(argv[1], "-help") == 0)
+    {
+        print_keys();
+        return 0;
+    }
+    else if (argc > 1 && strcmp(argv[1], "-test_i") == 0)
+    {
+        int index = argv[2][0] - '0';
+        long double a = strtold(argv[3], NULL), b = strtold(argv[4], NULL);
+        test_integral(index, a, b);
+        return 0;
+    }
+    else if (argc > 1 && strcmp(argv[1], "-test_r") == 0)
+    {
+        int index1 = argv[2][0] - '0', index2 = argv[3][0] - '0';
+        long double a = strtold(argv[4], NULL), b = strtold(argv[5], NULL);
+        test_root(index1, index2, a, b);
+        return 0;
+    }
     long double ans = 0, r1, r2, r3;
-    int cnt = 0;
+    int cnt1, cnt2, cnt3;
+    r1 = root(f1, f2, f1_derivative, f2_derivative, 2.5, 4, eps_2, &cnt1); ///3.848
+    r2 = root(f3, f2, f3_derivative, f2_derivative, 2.5, 4, eps_2, &cnt2); ///3.244
+    r3 = root(f1, f3, f1_derivative, f3_derivative, 0.01, 4, eps_2, &cnt3); ///0.854
+    if (argc > 1 && strcmp(argv[1], "-cross") == 0 || argc > 2 && strcmp(argv[2], "-cross") == 0)
+    {
+        printf("f1 crosses f2 in %Lf\n", r1);
+        printf("f2 crosses f3 in %Lf\n", r2);
+        printf("f1 crosses f3 in %Lf\n", r3);
+    }
+    if (argc > 1 && strcmp(argv[1], "-steps") == 0 || argc > 2 && strcmp(argv[2], "-steps") == 0)
+    {
+        printf("for root1 [f1 cross f2] - %d\n", cnt1);
+        printf("for root2 [f2 cross f3] - %d\n", cnt2);
+        printf("for root3 [f1 cross f2] - %d\n", cnt3);
+    }
 
-    printf("%Lf %Lf %Lf %Lf %Lf\n", f1(1), f1(2), f1(0), f1(4), f1_derivative(1)); ///3.6  4.2  3  5.4  0.6
-    printf("%Lf %Lf %Lf %Lf %Lf %Lf %Lf\n", f2(1), f2(2), f2(0), f2(4), f2_derivative(0), f2_derivative(1), f2_derivative(-1)); ///-2  -1  -9  7  12  3  27
-    printf("%Lf %Lf %Lf %Lf %Lf %Lf %Lf\n", f3(1), f3(2), f3(0), f3(4), f3_derivative(1), f3_derivative(0), f3_derivative(3)); ///3  1.5  inf  0.75  -3  inf  -0.333
-    r1 = root(f1, f2, f1_derivative, f2_derivative, 2.5, 4, eps_2, &cnt); ///3.848
-    printf("%Lf %d\n", r1, cnt);
-    r2 = root(f3, f2, f3_derivative, f2_derivative, 2.5, 4, eps_2, &cnt); ///3.244
-    printf("%Lf %d\n", r2, cnt);
-    r3 = root(f1, f3, f1_derivative, f3_derivative, 0.01, 4, eps_2, &cnt); ///0.854
-    printf("%Lf %d\n", r3, cnt);
-
-    long double result = 0;
-    ans = integral(f1, r3, r1, eps_1);
-    printf("I1 = %Lf\n", ans);
-    result += ans;
-
-    ans = integral(f2, r1, r2, eps_1);
-    printf("I2 = %Lf\n", ans);
-    result += ans;
-
-    ans = integral(f3, r2, r3, eps_1);
-    printf("I3 = %Lf\n", ans);
-    result += ans;
-
+    long double result = integral(f1, r3, r1, eps_1);
+    result += integral(f2, r1, r2, eps_1);
+    result += integral(f3, r2, r3, eps_1);
     printf("ANSWER: %Lf\n", fabsl(result));
-
-
     return 0;
 }
