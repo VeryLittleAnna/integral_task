@@ -95,10 +95,12 @@ f3:
 f3_derivative:
     push ebp
     mov ebp, esp
+    sub esp, 12
     finit 
     fild dword[c31] ; -3
     fld tword[ebp + 8]
-    fdiv
+    fdivp
+    fld tword[ebp + 8]
     fdivp
     mov esp, ebp
     pop ebp
