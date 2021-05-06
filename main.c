@@ -122,15 +122,15 @@ long double integral( long double (*f) (long double), long double a, long double
 #define KEYS_NUM 5
 
 char * keys[KEYS_NUM] = {"-help", "-test_i", "-test_r", "-cross", "-steps"};
-char * meanings[KEYS_NUM] = {"print all keys", "[index of function 1/2/3] [L] [R] - find integral under function on [L, R]", \
-"[2 indices of functions: 1/2/3] [L] [R] - find intersections of two functions with entered indices on [L, R]", \
-"print pointes of function intersection", "print number of iterations during root calculations"};
+char * meanings[KEYS_NUM] = {"\n    print all keys", "INDEX_OF_FUNCTION L R\n    find integral under function with entered index (1/2/3) on [L, R]", \
+"INDEX_OF_FUNCTION INDEX_OF_FUNCTION L R\n    find intersections of two functions with entered indices (1/2/3) on [L, R]", \
+"\n    print points of function intersection", "\n    print number of iterations during root calculations"};
 
 void print_keys(void)
 {
     for (int i = 0; i < KEYS_NUM; ++i)
     {
-        printf("%s\n    %s\n", keys[i], meanings[i]);
+        printf("%s %s\n", keys[i], meanings[i]);
     }
 }
 
