@@ -42,7 +42,7 @@ extern long double f3(long double x);
 extern long double f3_derivative(long double x);
 #endif
 
-
+#ifdef COMBINE
 
 long double root(long double (* f) (long double), long double (*g) (long double), long double (* f_derivative) (long double), long double (* g_derivative) (long double), long double a, long double b, long double eps1, int * cnt)
 { ///function F(x) = f(x) - g(x)
@@ -81,7 +81,23 @@ long double root(long double (* f) (long double), long double (*g) (long double)
     }
     return (c + d) / 2;
 }
+ #else
 
+long double root(long double (* f) (long double), long double (*g) (long double), long double (* f_derivative) (long double), long double (* g_derivative) (long double), long double a, long double b, long double eps1, int * cnt)
+{ ///function F(x) = f(x) - g(x)
+    long double c = a, d = b, func_c = f(a) - g(a), func_d = f(b) - g(b), x, func_x; ///current section [c, d], F(c) * F(d) < 0
+    *cnt = 0;
+    while (d - c > eps1)
+    {
+        x = (c + d) / 2;
+        func_x = f(x) - g(x);
+        if (func_x * func_c >= 0) c = x;
+        else d = x;
+        (*cnt)++;
+    }
+    return (c + d) / 2;
+}
+#endif
 
 
 long double integral( long double (*f) (long double), long double a, long double b, long double eps2)
